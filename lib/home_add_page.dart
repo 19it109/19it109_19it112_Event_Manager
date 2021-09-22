@@ -1,3 +1,6 @@
+import 'package:event/database_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 class AddEventPage extends StatefulWidget {
@@ -13,6 +16,11 @@ class _AddEventPageState extends State<AddEventPage> {
   final TextEditingController _descriptionController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
+
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  bool isSaving = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +38,31 @@ class _AddEventPageState extends State<AddEventPage> {
               icon: Icon(Icons.check),
               onPressed: () {
                 //save the event
-                print(_eventController.text);
+                if (_eventController.text.isEmpty || selectedDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Fields must be empty")),
+                  );
+                } else {
+                  setState(() {
+                    isSaving = true;
+                  });
+
+                  final uid = _auth.currentUser!.uid;
+                  DatabaseClass(uid)
+                      .addEvents(
+                          eventName: _eventController.text.trim(),
+                          location: _locationController.text.trim(),
+                          description: _descriptionController.text.trim(),
+                          date: selectedDate.toString())
+                      .then((value) {
+                    setState(() {
+                      isSaving = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(value)),
+                    );
+                  });
+                }
               }),
         ],
       ),
@@ -100,6 +132,12 @@ class _AddEventPageState extends State<AddEventPage> {
                       ),
                     ],
                   ),
+                  SizedBox(height: 40),
+                  isSaving == false
+                      ? Container()
+                      : CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )
                 ],
               )
             ],
@@ -113,7 +151,7 @@ class _AddEventPageState extends State<AddEventPage> {
     await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime.utc(2021),
       lastDate: DateTime.utc(2030),
     ).then((value) {
       setState(() {
