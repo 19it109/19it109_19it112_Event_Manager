@@ -2,6 +2,7 @@ import 'package:event/database_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AddEventPage extends StatefulWidget {
   //const ({ Key? key }) : super(key: key);
@@ -16,6 +17,7 @@ class _AddEventPageState extends State<AddEventPage> {
   final TextEditingController _descriptionController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
+  String formatedDate = "";
 
   FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -38,6 +40,7 @@ class _AddEventPageState extends State<AddEventPage> {
               icon: Icon(Icons.check),
               onPressed: () {
                 //save the event
+                // ignore: unnecessary_null_comparison
                 if (_eventController.text.isEmpty || selectedDate == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Fields must be empty")),
@@ -106,7 +109,9 @@ class _AddEventPageState extends State<AddEventPage> {
                                       color: Colors.grey, width: 2.0),
                                 ),
                               ),
-                              child: Text("$selectedDate")),
+                              child: formatedDate == ""
+                                  ? Text("$selectedDate")
+                                  : Text("$formatedDate")),
                         ),
                       ),
                       const SizedBox(
@@ -148,16 +153,19 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future getDate(BuildContext context) async {
-    await showDatePicker(
+    DateTime? date = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime.utc(2021),
       lastDate: DateTime.utc(2030),
-    ).then((value) {
+    );
+    if (date != null) {
+      String realDate = DateFormat.yMd().format(selectedDate);
       setState(() {
-        selectedDate = value!;
+        selectedDate = date;
+        formatedDate = realDate;
       });
-    });
+    }
   }
 
   Future getTime(BuildContext context) async {

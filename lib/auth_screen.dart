@@ -1,7 +1,7 @@
-import 'dart:math';
+//import 'dart:math';
 
 import 'package:event/home_page.dart';
-import 'package:event/main.dart';
+//import 'package:event/main.dart';
 import 'package:flutter/material.dart';
 import './auth.dart';
 import 'http_exception.dart';
@@ -64,7 +64,10 @@ class AuthScreen extends StatelessWidget {
                       child: Text(
                         'Event App',
                         style: TextStyle(
-                          color: Theme.of(context).accentTextTheme.title!.color,
+                          color: Theme.of(context)
+                              .accentTextTheme
+                              .headline6!
+                              .color,
                           fontSize: 50,
                           fontFamily: 'Anton',
                           fontWeight: FontWeight.normal,
